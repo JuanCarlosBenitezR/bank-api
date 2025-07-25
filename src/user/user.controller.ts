@@ -21,6 +21,11 @@ export class UserController {
     return this.userService.register(createUserDto);
   }
 
+  @Get('account-number')
+  generateAccountNumber() {
+    return this.userService.generateAccountNumber();
+  }
+
   @Post('login')
   login(@Body() loginUserDto: LoginUserDto) {
     return this.userService.login(loginUserDto);

@@ -16,6 +16,13 @@ export class UserService {
     return `This action returns the authenticated user`;
   }
 
+  generateAccountNumber() {
+    console.log('Generating account number...');
+    const timestamp = Date.now().toString().slice(-8);
+    const randomDigits = Math.floor(100000 + Math.random() * 900000).toString();
+    return timestamp + randomDigits;
+  }
+
   findOne(id: number) {
     return `This action returns a #${id} user`;
   }
