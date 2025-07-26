@@ -1,20 +1,71 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
+import { InjectModel } from '@nestjs/sequelize';
+import { User } from './entities/user.entity';
+import * as bcrypt from 'bcrypt';
+import e from 'express';
+import { JwtService } from '@nestjs/jwt';
+import { JwtPayload } from './interfaces/jwt-payload.interfaces';
+import { GetUser } from './decorators/get-user.decorator';
 
 @Injectable()
 export class UserService {
-  register(createUserDto: CreateUserDto) {
-    return 'This action adds a new user';
-  }
-  login(loginUserDto: LoginUserDto) {
-    return 'This action logs in a user';
+  constructor(
+    @InjectModel(User)
+    private userModel: typeof User,
+    private readonly jwtservice: JwtService, // Assuming JwtService is imported and injected
+  ) {}
+  async register(createUserDto: CreateUserDto) {
+    const { name, email, password } = createUserDto;
+    try {
+      const newUser = await this.userModel.create({
+        name: name,
+        email: email,
+        password: bcrypt.hashSync(password, 12),
+        account_number: this.generateAccountNumber(),
+        balance: 0.0,
+      });
+      return {
+        message: 'User registered successfully',
+        user: {
+          id: newUser.dataValues.id,
+          name: newUser.dataValues.name,
+          email: newUser.dataValues.email,
+          account_number: newUser.dataValues.account_number,
+          balance: newUser.dataValues.balance,
+        },
+      };
+    } catch (error) {
+      throw new Error('Error registering user: ' + error.message);
+    }
   }
 
-  findUserAuthenticated() {
-    return `This action returns the authenticated user`;
+  async login(loginUserDto: LoginUserDto) {
+    const { email, password } = loginUserDto;
+    const user = await this.userModel.findOne({
+      where: {
+        email: email,
+      },
+    });
+    if (!user || !bcrypt.compareSync(password, user.dataValues.password)) {
+      throw new BadRequestException('Invalid credentials');
+    }
+    return {
+      token: this.getJwtToken({ id: user.dataValues.id }),
+      message: 'Login successful',
+      user: {
+        id: user.dataValues.id,
+        name: user.dataValues.name,
+        email: user.dataValues.email,
+        account_number: user.dataValues.account_number,
+        balance: user.dataValues.balance,
+      },
+    };
   }
+
+  findUserAuthenticated() {}
 
   generateAccountNumber() {
     console.log('Generating account number...');
@@ -25,5 +76,16 @@ export class UserService {
 
   findOne(id: number) {
     return `This action returns a #${id} user`;
+  }
+
+  private getJwtToken(payload: JwtPayload) {
+    return this.jwtservice.sign(payload);
+  }
+
+  private handleDBException(error: any) {
+    console.log(error);
+    if (error.parent?.code === '23505') {
+      throw new BadRequestException(error.parent.detail);
+    }
   }
 }
