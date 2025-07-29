@@ -5,8 +5,13 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { envs } from 'src/config/envs';
 import { ConfigService } from '@nestjs/config';
 import { JwtPayload } from '../interfaces/jwt-payload.interfaces';
-import { BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 
+@Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     @InjectModel(User)
@@ -27,9 +32,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     });
     if (!user) {
       throw new NotFoundException(`Token not valid`);
-    }
-    if (!user.dataValues.isActive) {
-      throw new BadRequestException('User is not active');
     }
     return user;
   }

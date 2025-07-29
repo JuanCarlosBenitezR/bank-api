@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
@@ -15,7 +19,7 @@ export class UserService {
   constructor(
     @InjectModel(User)
     private userModel: typeof User,
-    private readonly jwtservice: JwtService, // Assuming JwtService is imported and injected
+    private readonly jwtservice: JwtService,
   ) {}
   async register(createUserDto: CreateUserDto) {
     const { name, email, password } = createUserDto;
@@ -65,7 +69,18 @@ export class UserService {
     };
   }
 
-  findUserAuthenticated() {}
+  findUserAuthenticated(user: User) {
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      account_number: user.account_number,
+      balance: user.balance,
+    };
+  }
 
   generateAccountNumber() {
     console.log('Generating account number...');

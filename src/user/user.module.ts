@@ -5,9 +5,10 @@ import { SequelizeModule } from '@nestjs/sequelize';
 import { User } from './entities/user.entity';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule } from '@nestjs/jwt';
+import { JwtStrategy } from './strategies/jwt.strategy';
 @Module({
   controllers: [UserController],
-  providers: [UserService],
+  providers: [UserService, JwtStrategy],
   imports: [
     ConfigModule,
     SequelizeModule.forFeature([User]),
@@ -21,6 +22,7 @@ import { JwtModule } from '@nestjs/jwt';
         },
       }),
     }),
-  ], // Add your models here if needed
+  ],
+  exports: [UserService, JwtModule, JwtStrategy],
 })
 export class UserModule {}

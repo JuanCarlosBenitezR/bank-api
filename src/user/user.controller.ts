@@ -6,11 +6,17 @@ import {
   Patch,
   Param,
   Delete,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { LoginUserDto } from './dto/login-user.dto';
+import { GetUser } from './decorators/get-user.decorator';
+import { User } from './entities/user.entity';
+import { use } from 'passport';
+import { JwtStrategy } from './strategies/jwt.strategy';
 
 @Controller('user')
 export class UserController {
@@ -27,8 +33,9 @@ export class UserController {
   }
 
   @Get('me')
-  findUserAuthenticated() {
-    return this.userService.findUserAuthenticated();
+  @UseGuards(AuthGuard('jwt'))
+  findUserAuthenticated(@GetUser() user: User) {
+    return this.userService.findUserAuthenticated(user);
   }
 
   @Get(':id')
