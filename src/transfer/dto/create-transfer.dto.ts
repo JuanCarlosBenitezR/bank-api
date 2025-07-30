@@ -2,12 +2,12 @@ import { IsNotEmpty, IsString, IsNumber } from 'class-validator';
 
 export class CreateTransferDto {
   @IsNotEmpty()
-  @IsString()
-  senderId: string;
+  @IsNumber()
+  senderId: number;
 
   @IsNotEmpty()
-  @IsString()
-  receiverId: string;
+  @IsNumber()
+  receiverId: number;
 
   @IsNotEmpty()
   @IsNumber()
