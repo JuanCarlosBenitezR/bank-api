@@ -89,8 +89,16 @@ export class UserService {
     return timestamp + randomDigits;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  findOne(id: string) {
+    const user = this.userModel.findOne({
+      where: {
+        id: id,
+      },
+    });
+    if (!user) {
+      throw new NotFoundException(`User with ID ${id} not found`);
+    }
+    return user;
   }
 
   private getJwtToken(payload: JwtPayload) {
