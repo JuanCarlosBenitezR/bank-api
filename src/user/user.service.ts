@@ -101,6 +101,20 @@ export class UserService {
     return user;
   }
 
+  async updateBalance(user: User, amount: number) {
+    try {
+      console.log('user balance before update', user.dataValues.balance);
+      console.log('amount to update', amount);
+      const updatedUser = await this.userModel.update(
+        { balance: user.dataValues.balance - amount },
+        { where: { id: user.dataValues.id }, returning: true },
+      );
+      return updatedUser[1][0];
+    } catch (error) {
+      this.handleDBException(error);
+    }
+  }
+
   private getJwtToken(payload: JwtPayload) {
     return this.jwtservice.sign(payload);
   }

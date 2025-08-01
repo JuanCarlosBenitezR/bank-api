@@ -38,10 +38,10 @@ export class TransferService {
         amount: amount,
       });
 
-      const updatedSender = await this.userService.updateBalance(user, -amount);
+      const updatedSender = await this.userService.updateBalance(user, amount);
       const updatedReceiver = await this.userService.updateBalance(
         receiver,
-        amount,
+        -amount,
       );
 
       return {
