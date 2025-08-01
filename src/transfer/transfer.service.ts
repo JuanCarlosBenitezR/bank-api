@@ -49,7 +49,7 @@ export class TransferService {
         transfer: {
           id: transfer.dataValues.id,
           senderId: transfer.dataValues.senderId,
-          receiverAccount: transfer.dataValues.receiverAccount,
+          receiverId: transfer.dataValues.receiverId,
           amount: transfer.dataValues.amount,
         },
       };
