@@ -32,7 +32,8 @@ export class TransferController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.transferService.findOne(+id);
+  @UseGuards(AuthGuard('jwt'))
+  findOne(@Param('id') id: string, @GetUser() user: User) {
+    return this.transferService.findOne(+id, user);
   }
 }

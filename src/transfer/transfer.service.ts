@@ -1,10 +1,15 @@
-import { Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateTransferDto } from './dto/create-transfer.dto';
 import { UpdateTransferDto } from './dto/update-transfer.dto';
 import { User } from 'src/user/entities/user.entity';
 import { Transfer } from './entities/transfer.entity';
 import { InjectModel } from '@nestjs/sequelize';
 import { UserService } from 'src/user/user.service';
+import { NotFoundError } from 'rxjs';
 
 @Injectable()
 export class TransferService {
@@ -17,18 +22,13 @@ export class TransferService {
   async create(createTransferDto: CreateTransferDto, user: User) {
     const { receiverId, amount } = createTransferDto;
     try {
-      console.log('receiverId', receiverId);
-      console.log('amount', amount);
       const receiver = await this.userService.findOne(receiverId);
       if (!receiver) {
-        throw new Error('Receiver not found');
+        throw new NotFoundException('Receiver not found');
       }
-      console.log('receiver', receiver);
-      console.log('userId', user.id);
       if (amount <= 0) {
         throw new Error('Amount must be greater than zero');
       }
-      console.log('user balance', user.dataValues.balance);
       if (user.dataValues.balance < amount) {
         throw new Error('Insufficient balance');
       }
@@ -66,11 +66,21 @@ export class TransferService {
     });
   }
 
-  findOne(id: number) {
-    return this.transferModel.findOne({
+  async findOne(id: number, user: User) {
+    const transfer = await this.transferModel.findOne({
       where: {
         id: id,
       },
     });
+    if (!transfer) {
+      throw new NotFoundException(`Transfer with ID ${id} not found`);
+    }
+    if (
+      transfer.dataValues.senderId === user.dataValues.id ||
+      transfer.dataValues.receiverId === user.dataValues.id
+    ) {
+      return transfer;
+    }
+    throw new ForbiddenException('Transfer not found for this user');
   }
 }

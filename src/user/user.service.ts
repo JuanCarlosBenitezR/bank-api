@@ -75,15 +75,14 @@ export class UserService {
     }
     return {
       id: user.id,
-      name: user.name,
-      email: user.email,
-      account_number: user.account_number,
-      balance: user.balance,
+      name: user.dataValues.name,
+      email: user.dataValues.email,
+      account_number: user.dataValues.account_number,
+      balance: user.dataValues.balance,
     };
   }
 
   generateAccountNumber() {
-    console.log('Generating account number...');
     const timestamp = Date.now().toString().slice(-8);
     const randomDigits = Math.floor(100000 + Math.random() * 900000).toString();
     return timestamp + randomDigits;
@@ -103,8 +102,6 @@ export class UserService {
 
   async updateBalance(user: User, amount: number) {
     try {
-      console.log('user balance before update', user.dataValues.balance);
-      console.log('amount to update', amount);
       const updatedUser = await this.userModel.update(
         { balance: user.dataValues.balance - amount },
         { where: { id: user.dataValues.id }, returning: true },
@@ -120,7 +117,6 @@ export class UserService {
   }
 
   private handleDBException(error: any) {
-    console.log(error);
     if (error.parent?.code === '23505') {
       throw new BadRequestException(error.parent.detail);
     }
